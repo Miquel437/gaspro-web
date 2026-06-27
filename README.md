@@ -3,6 +3,14 @@
 Aplicació web de càlcul de canonades de gas.
 Classificació de gasos per índex de Wobbe (UNE-EN 437:2022) i càlcul hidràulic amb fórmula de Renouard.
 
+**👉 Codi font: https://github.com/Miquel437/gaspro-web**
+
+## 🚀 Prova-la online
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Miquel437/gaspro-web)
+
+(Obre el link → Inicia sessió amb GitHub → Crea el servei → Ja funciona!)
+
 ## Funcionalitats
 
 - 🔧 **Calculadora de trams**: Calcula diàmetre, tub comercial, pèrdua de càrrega i velocitat
@@ -32,12 +40,14 @@ python app.py
 
 Obre http://localhost:5000
 
-## Desplegament a Render.com
+## ☁️ Desplegament a Render.com (1 clic)
 
-1. Crea un compte a [Render.com](https://render.com)
-2. Connecta el repositori de GitHub
+Fes clic al botó de dalt o segueix aquests passos:
+
+1. Crea un compte a [Render.com](https://render.com) (gratis, amb GitHub)
+2. Connecta el repositori `Miquel437/gaspro-web`
 3. Crea un **Web Service** amb:
    - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `gunicorn app:app`
-4. Opcional: afegeix una base de dades PostgreSQL gratuïta
-5. Render et donarà un enllaç com: `https://gaspro.onrender.com`
+4. Opcional: afegeix una base de dades **PostgreSQL** gratuïta
+5️⃣ Obtindràs un enllaç com: `https://gaspro-web.onrender.com` 🌍
