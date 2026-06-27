@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}GasPro - Inici{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<div class="p-5 mb-4 bg-primary text-white rounded-3 shadow">
+    <div class="container-fluid py-3">
+        <h1 class="display-5 fw-bold"><i class="bi bi-fuel-pump"></i> GasPro Web</h1>
+        <p class="col-md-10 fs-4">
+            Calculadora de canonades de gas per a instal·lacions individuals (IRI)
+            i comunitàries (IRC). Classificació de gasos per índex de Wobbe,
+            càlcul hidràulic amb fórmula de Renouard.
+        </p>
+        <a href="/calculadora" class="btn btn-light btn-lg mt-2">
+            <i class="bi bi-calculator"></i> Anar a la Calculadora
+        </a>
+    </div>
+</div>
+
+<!-- Targetes -->
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-calculator text-primary"></i> Calculadora de trams</h5>
+                <p class="card-text">
+                    Calcula el diàmetre teòric, el tub comercial, la pèrdua de càrrega
+                    i la velocitat del gas per a cada tram de la instal·lació.
+                </p>
+                <a href="/calculadora" class="btn btn-outline-primary">Obrir</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-collection text-success"></i> Catàleg</h5>
+                <p class="card-text">
+                    Gestiona el catàleg d'aparells (calderes, cuines, escalfadors)
+                    i accessoris (vàlvules, reguladors, claus).
+                </p>
+                <a href="/cataleg" class="btn btn-outline-success">Obrir</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-folder text-warning"></i> Projectes</h5>
+                <p class="card-text">
+                    Guarda i recupera els teus projectes de càlcul de xarxes de gas.
+                </p>
+                <a href="/projectes" class="btn btn-outline-warning">Obrir</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4 g-4">
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <i class="bi bi-info-circle"></i> Classificador de gasos (Wobbe)
+            </div>
+            <div class="card-body">
+                <p>Classifica el gas segons l'índex de Wobbe (UNE-EN 437:2022):</p>
+                <ul class="list-group list-group-flush" id="gasos-llista">
+                    <!-- Es carrega via JS -->
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <i class="bi bi-lightning-charge"></i> Calculador de bateria
+            </div>
+            <div class="card-body">
+                <form id="form-bateria" class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label">Gas</label>
+                        <select class="form-select" id="bat-gas">
+                            <option value="propa">Propà</option>
+                            <option value="buta">Butà</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Potència (kW)</label>
+                        <input type="number" class="form-control" id="bat-potencia" value="24" step="0.1">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Hores/dia</label>
+                        <input type="number" class="form-control" id="bat-hores" value="12" step="0.5">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Temperatura (°C)</label>
+                        <input type="number" class="form-control" id="bat-temp" value="20">
+                    </div>
+                    <div class="col-12">
+                        <button type="button" class="btn btn-warning w-100" onclick="calcularBateria()">
+                            🔋 Calcular bateria
+                        </button>
+                    </div>
+                </form>
+                <div id="bat-resultat" class="mt-2" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Carregar classificació de gasos
+fetch('/api/gasos-estandard')
+    .then(r => r.json())
+    .then(data => {
+        const llista = document.getElementById('gasos-llista');
+        llista.innerHTML = '';
+        data.forEach(g => {
+            llista.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                <span><strong>${g.nom_tecnic}</strong> - ${g.desc}</span>
+                <span class="badge bg-primary rounded-pill">${g.pcs_mj} MJ/m³</span>
+            </li>`;
+        });
+    });
+</script>
+{% endblock %}

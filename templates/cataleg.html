@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% block title %}GasPro - Catàleg{% endblock %}
+
+{% block content %}
+<h2><i class="bi bi-collection"></i> Catàleg d'aparells i accessoris</h2>
+<hr>
+
+<ul class="nav nav-tabs mb-3" id="catalegTabs">
+    <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-aparells">
+            <i class="bi bi-motherboard"></i> Aparells
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-accessoris">
+            <i class="bi bi-tools"></i> Accessoris
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <!-- ===== PESTANYA APARELLS ===== -->
+    <div class="tab-pane fade show active" id="tab-aparells">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped mb-0" id="taula-aparells">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nom</th>
+                                        <th>Fabricant</th>
+                                        <th>Model</th>
+                                        <th>Tipus</th>
+                                        <th>Potència (kW)</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ap in aparells %}
+                                    <tr data-id="{{ ap.id }}">
+                                        <td>{{ ap.id }}</td>
+                                        <td>{{ ap.nom }}</td>
+                                        <td>{{ ap.fabricant or '' }}</td>
+                                        <td>{{ ap.model_exacte or '' }}</td>
+                                        <td><span class="badge bg-info">{{ ap.tipus }}</span></td>
+                                        <td>{{ ap.potencia_kw }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger" onclick="eliminarAparell({{ ap.id }})">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Afegir aparell</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form-aparell">
+                            <div class="mb-2">
+                                <label class="form-label">Nom *</label>
+                                <input type="text" class="form-control" id="ap-nom" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Fabricant</label>
+                                <input type="text" class="form-control" id="ap-fabricant">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Model</label>
+                                <input type="text" class="form-control" id="ap-model">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Tipus</label>
+                                <select class="form-select" id="ap-tipus">
+                                    <option value="caldera">Caldera</option>
+                                    <option value="cuina">Cuina</option>
+                                    <option value="escalfador">Escalfador</option>
+                                    <option value="forn">Forn</option>
+                                    <option value="altre">Altre</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Potència (kW) *</label>
+                                <input type="number" class="form-control" id="ap-potencia" step="0.1" min="0" value="24">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Hores/dia</label>
+                                <input type="number" class="form-control" id="ap-hores" step="0.5" min="0" value="2">
+                            </div>
+                            <button type="button" class="btn btn-success w-100" onclick="afegirAparell()">
+                                <i class="bi bi-save"></i> Afegir
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PESTANYA ACCESSORIS ===== -->
+    <div class="tab-pane fade" id="tab-accessoris">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped mb-0" id="taula-accessoris">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nom</th>
+                                        <th>Categoria</th>
+                                        <th>Descripció</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for el in elements %}
+                                    <tr data-id="{{ el.id }}">
+                                        <td>{{ el.id }}</td>
+                                        <td>{{ el.nom }}</td>
+                                        <td><span class="badge bg-secondary">{{ el.categoria }}</span></td>
+                                        <td>{{ el.descripcio or '' }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger" onclick="eliminarElement({{ el.id }})">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Afegir accessori</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form-accessori">
+                            <div class="mb-2">
+                                <label class="form-label">Nom *</label>
+                                <input type="text" class="form-control" id="el-nom" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Categoria</label>
+                                <select class="form-select" id="el-categoria">
+                                    <option value="origen">Origen</option>
+                                    <option value="regulacio">Regulació</option>
+                                    <option value="valvula">Vàlvula</option>
+                                    <option value="accessori">Accessori</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Descripció</label>
+                                <textarea class="form-control" id="el-descripcio" rows="2"></textarea>
+                            </div>
+                            <button type="button" class="btn btn-success w-100" onclick="afegirElement()">
+                                <i class="bi bi-save"></i> Afegir
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function afegirAparell() {
+    const data = {
+        nom: document.getElementById('ap-nom').value,
+        fabricant: document.getElementById('ap-fabricant').value,
+        model: document.getElementById('ap-model').value,
+        tipus: document.getElementById('ap-tipus').value,
+        potencia_kw: parseFloat(document.getElementById('ap-potencia').value),
+        hores_dia: parseFloat(document.getElementById('ap-hores').value || 0)
+    };
+    if (!data.nom) {
+        alert('El nom és obligatori');
+        return;
+    }
+    fetch('/api/aparells', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(() => location.reload());
+}
+
+function eliminarAparell(id) {
+    if (!confirm('Eliminar aquest aparell?')) return;
+    fetch('/api/aparells/' + id, {method: 'DELETE'})
+    .then(r => r.json())
+    .then(() => location.reload());
+}
+
+function afegirElement() {
+    const data = {
+        nom: document.getElementById('el-nom').value,
+        categoria: document.getElementById('el-categoria').value,
+        descripcio: document.getElementById('el-descripcio').value
+    };
+    if (!data.nom) {
+        alert('El nom és obligatori');
+        return;
+    }
+    fetch('/api/elements', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(() => location.reload());
+}
+
+function eliminarElement(id) {
+    if (!confirm('Eliminar aquest accessori?')) return;
+    fetch('/api/elements/' + id, {method: 'DELETE'})
+    .then(r => r.json())
+    .then(() => location.reload());
+}
+</script>
+{% endblock %}

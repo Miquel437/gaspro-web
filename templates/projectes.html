@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}GasPro - Projectes{% endblock %}
+
+{% block content %}
+<h2><i class="bi bi-folder"></i> Gestor de projectes</h2>
+<hr>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-save"></i> Guardar projecte actual</h5>
+            </div>
+            <div class="card-body">
+                <form id="form-guardar">
+                    <div class="mb-2">
+                        <label class="form-label">Nom del projecte</label>
+                        <input type="text" class="form-control" id="proj-nom" placeholder="Ex: Casa Joana" required>
+                    </div>
+                    <button type="button" class="btn btn-success w-100" onclick="guardarProjecte()">
+                        <i class="bi bi-cloud-upload"></i> Guardar
+                    </button>
+                </form>
+                <div id="guardar-msg" class="mt-2" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-list"></i> Projectes desats</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Data</th>
+                                <th>Accions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in projectes %}
+                            <tr>
+                                <td>{{ p.id }}</td>
+                                <td>{{ p.nom }}</td>
+                                <td>{{ p.data[:19] if p.data else '--' }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="carregarProjecte({{ p.id }})">
+                                        <i class="bi bi-download"></i> Carregar
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="eliminarProjecte({{ p.id }})">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No hi ha projectes desats</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal per veure projecte carregat -->
+<div class="modal fade" id="modalProjecte" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-file-text"></i> Projecte: <span id="modal-proj-nom"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modal-proj-body">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function guardarProjecte() {
+    const nom = document.getElementById('proj-nom').value;
+    if (!nom) {
+        alert('Introdueix un nom pel projecte');
+        return;
+    }
+    if (typeof xarxa === 'undefined') {
+        // Agafar dades de la calculadora si existeixen
+        fetch('/api/projectes', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                nom: nom,
+                dades: {info: {buid: true}}
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('guardar-msg').style.display = 'block';
+            document.getElementById('guardar-msg').innerHTML =
+                '<div class="alert alert-success">Projecte guardat correctament (ID: ' + data.id + ')</div>';
+            setTimeout(() => location.reload(), 1500);
+        });
+    }
+}
+
+function carregarProjecte(id) {
+    fetch('/api/projectes/' + id)
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('modal-proj-nom').textContent = data.nom;
+        const body = document.getElementById('modal-proj-body');
+        if (data.dades && data.dades.trams) {
+            let html = '<h6>Trams:</h6><table class="table table-sm"><thead><tr><th>Origen</th><th>Destí</th><th>L (m)</th><th>Pot (kW)</th></tr></thead><tbody>';
+            data.dades.trams.forEach(t => {
+                html += `<tr><td>${t.origen}</td><td>${t.desti}</td><td>${t.longitud}</td><td>${t.potencia_kw}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            body.innerHTML = html;
+        } else {
+            body.innerHTML = '<p class="text-muted">El projecte no conté dades de trams.</p>';
+        }
+        new bootstrap.Modal(document.getElementById('modalProjecte')).show();
+    });
+}
+
+function eliminarProjecte(id) {
+    if (!confirm('Eliminar aquest projecte?')) return;
+    fetch('/api/projectes/' + id, {method: 'DELETE'})
+    .then(r => r.json())
+    .then(() => location.reload());
+}
+</script>
+{% endblock %}
