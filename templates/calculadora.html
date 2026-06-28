@@ -119,9 +119,11 @@
                         <label class="form-label small">Tipus destí</label>
                         <select class="form-select form-select-sm" id="tram-tipus">
                             <option value="aparell">Aparell</option>
-                            <option value="clau">Clau</option>
+                            <option class="irc" value="clau_muntant">Clau muntant</option>
+                            <option class="irc" value="clau_abonat">Clau abonat</option>
                             <option value="derivacio">Derivació</option>
                             <option value="regulador">Regulador</option>
+                            <option class="irc" value="regulador_nl">Regulador NL</option>
                             <option value="armari">Armari regulació</option>
                         </select>
                     </div>
@@ -350,7 +352,17 @@ function afegirTram() {
     const apSel = document.getElementById('tram-aparell');
     const apNom = apSel.options[apSel.selectedIndex]?.dataset?.nom || 'Aparell';
 
-    const desti = tipus.charAt(0).toUpperCase() + tipus.slice(1) + nodeCounter;
+    // Nom del destí segons el tipus
+    const nomsTipus = {
+        'aparell': 'Aparell',
+        'clau_muntant': 'ClauMunt',
+        'clau_abonat': 'ClauAbon',
+        'derivacio': 'Deriv',
+        'regulador': 'Regulador',
+        'regulador_nl': 'RegNL',
+        'armari': 'Armari'
+    };
+    const desti = (nomsTipus[tipus] || tipus.charAt(0).toUpperCase() + tipus.slice(1)) + nodeCounter;
     nodeCounter++;
 
     const pressioMbar = parseFloat(document.getElementById('tram-pressio').dataset.mbar) || 20;
