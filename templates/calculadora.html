@@ -12,10 +12,10 @@
 
 <div class="row">
     <!-- Paràmetres generals -->
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card shadow-sm mb-3">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-gear"></i> Paràmetres generals</h5>
+            <div class="card-header bg-primary text-white py-2">
+                <h6 class="mb-0"><i class="bi bi-gear"></i> Paràmetres generals</h6>
             </div>
             <div class="card-body">
                 <form id="form-params">
@@ -30,42 +30,46 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label">PCS (kWh/m³)</label>
-                        <input type="number" class="form-control" id="param-pcs" step="0.01" value="10.75">
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Densitat relativa</label>
-                        <input type="number" class="form-control" id="param-dens" step="0.01" value="0.60">
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Pressió final aparells</label>
-                        <div class="input-group">
-                            <input type="number" class="form-control" id="param-pressio" step="0.1" value="20" readonly>
-                            <span class="input-group-text" id="param-pressio-unit">mbar</span>
+                    <div class="row g-1 mb-2">
+                        <div class="col-6">
+                            <label class="form-label small">PCS (kWh/m³)</label>
+                            <input type="number" class="form-control form-control-sm" id="param-pcs" step="0.01" value="10.75">
                         </div>
-                        <small class="text-muted">Cada tram té el seu camp de pressió</small>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">ΔP màxim (mbar)</label>
-                        <input type="number" class="form-control" id="param-dp" step="0.1" value="1.0">
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Factor demanda</label>
-                        <select class="form-select" id="param-factor">
-                            <option value="1.0">100%</option>
-                            <option value="0.75">75%</option>
-                            <option value="0.5">50%</option>
-                            <option value="0.25">25%</option>
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Accessoris (%)</label>
-                        <div class="input-group">
-                            <input type="number" class="form-control" id="param-accessoris" value="15" min="0" max="50" step="5">
-                            <span class="input-group-text">%</span>
+                        <div class="col-6">
+                            <label class="form-label small">Densitat rel.</label>
+                            <input type="number" class="form-control form-control-sm" id="param-dens" step="0.01" value="0.60">
                         </div>
-                        <small class="text-muted">Longitud equivalent per colzes, T's, claus...</small>
+                    </div>
+                    <div class="row g-1 mb-2">
+                        <div class="col-6">
+                            <label class="form-label small">Pressió final aparells</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control" id="param-pressio" step="0.1" value="20" readonly>
+                                <span class="input-group-text" id="param-pressio-unit">mbar</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">ΔP màxim (mbar)</label>
+                            <input type="number" class="form-control form-control-sm" id="param-dp" step="0.1" value="1.0">
+                        </div>
+                    </div>
+                    <div class="row g-1 mb-2">
+                        <div class="col-6">
+                            <label class="form-label small">Factor demanda</label>
+                            <select class="form-select form-select-sm" id="param-factor">
+                                <option value="1.0">100%</option>
+                                <option value="0.75">75%</option>
+                                <option value="0.5">50%</option>
+                                <option value="0.25">25%</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Accessoris (%)</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control" id="param-accessoris" value="15" min="0" max="50" step="5">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -73,44 +77,46 @@
 
         <!-- Classificador de gas -->
         <div class="card shadow-sm mb-3">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0"><i class="bi bi-fire"></i> Classificació del gas</h5>
+            <div class="card-header bg-info text-white py-2">
+                <h6 class="mb-0"><i class="bi bi-fire"></i> Classificació del gas</h6>
             </div>
             <div class="card-body">
-                <div id="wobbe-info">
-                    <p class="mb-1"><strong>Índex de Wobbe:</strong> <span id="wobbe-valor">--</span></p>
-                    <p class="mb-1"><strong>Família:</strong> <span id="wobbe-familia">--</span></p>
-                    <p class="mb-1"><strong>Grup:</strong> <span id="wobbe-grup">--</span></p>
-                    <p class="mb-0"><strong>Designació:</strong> <span id="wobbe-designacio">--</span></p>
+                <div id="wobbe-info" class="small">
+                    <div class="row g-1">
+                        <div class="col-6"><strong>Wobbe:</strong> <span id="wobbe-valor">--</span></div>
+                        <div class="col-6"><strong>Família:</strong> <span id="wobbe-familia">--</span></div>
+                        <div class="col-6"><strong>Grup:</strong> <span id="wobbe-grup">--</span></div>
+                        <div class="col-6"><strong>Designació:</strong> <span id="wobbe-designacio">--</span></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Constructor de trams -->
-    <div class="col-md-8">
+    <div class="col-md-9">
         <div class="card shadow-sm mb-3">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Constructor de trams</h5>
+            <div class="card-header bg-success text-white py-2">
+                <h6 class="mb-0"><i class="bi bi-diagram-3"></i> Constructor de trams</h6>
             </div>
             <div class="card-body">
-                <form id="form-tram" class="row g-2">
+                <form id="form-tram" class="row g-1">
                     <div class="col-md-1">
-                        <label class="form-label">Origen</label>
+                        <label class="form-label small">Origen</label>
                         <select class="form-select form-select-sm" id="tram-origen">
                             <option value="Xarxa">Xarxa</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Longitud (m)</label>
+                    <div class="col-md-1">
+                        <label class="form-label small">L (m)</label>
                         <input type="number" class="form-control form-control-sm" id="tram-long" value="10" step="0.1" min="0.1">
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Potència (kW)</label>
+                    <div class="col-md-1">
+                        <label class="form-label small">Pot (kW)</label>
                         <input type="number" class="form-control form-control-sm" id="tram-pot" value="24" step="0.1">
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Tipus destí</label>
+                        <label class="form-label small">Tipus destí</label>
                         <select class="form-select form-select-sm" id="tram-tipus">
                             <option value="aparell">Aparell</option>
                             <option value="clau">Clau</option>
@@ -120,42 +126,41 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Pressió</label>
+                        <label class="form-label small">Pressió</label>
                         <div class="input-group input-group-sm">
                             <input type="number" class="form-control" id="tram-pressio" step="0.1" value="20">
-                            <select class="form-select form-select-sm" id="tram-pressio-unit" style="max-width:70px" onchange="canviUnitatPressio()">
+                            <select class="form-select form-select-sm" id="tram-pressio-unit" style="max-width:55px" onchange="canviUnitatPressio()">
                                 <option value="mbar">mb</option>
                                 <option value="bar">bar</option>
-                                <option value="mmca">mmca</option>
+                                <option value="mmca">mc</option>
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Xarxa</label>
+                    <div class="col-md-1">
+                        <label class="form-label small">Xarxa</label>
                         <select class="form-select form-select-sm" id="tram-xarxa" onchange="canviTipusXarxa()">
                             <option value="IRC" data-pressio="50" data-pmin="20">IRC</option>
                             <option value="IRI" data-pressio="20" data-pmin="18">IRI</option>
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Aparell</label>
+                        <label class="form-label small">Aparell</label>
                         <select class="form-select form-select-sm" id="tram-aparell">
                             <!-- Es carrega via JS -->
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">ΔP disp.</label>
-                        <div class="input-group input-group-sm">
-                            <input type="number" class="form-control" id="tram-dp-max" step="0.1" value="2.0">
-                            <span class="input-group-text" style="font-size:0.75rem">mbar</span>
-                        </div>
+                    <div class="col-md-1">
+                        <label class="form-label small">ΔP màx</label>
+                        <input type="number" class="form-control form-control-sm" id="tram-dp-max" step="0.1" value="2.0">
                     </div>
-                    <div class="col-md-12 d-flex align-items-end mt-1">
-                        <button type="button" class="btn btn-success btn-sm me-2 w-50" onclick="afegirTram()">
-                            <i class="bi bi-plus-circle"></i> Afegir tram
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="button" class="btn btn-success btn-sm w-100 py-1" onclick="afegirTram()" title="Afegir tram">
+                            <i class="bi bi-plus-circle"></i>
                         </button>
-                        <button type="button" class="btn btn-primary btn-sm w-50" onclick="recalcularTot()">
-                            <i class="bi bi-arrow-repeat"></i> Calcular
+                    </div>
+                    <div class="col-md-12 mt-1">
+                        <button type="button" class="btn btn-primary btn-sm w-100" onclick="recalcularTot()">
+                            <i class="bi bi-arrow-repeat"></i> Calcular tota la xarxa
                         </button>
                     </div>
                 </form>
@@ -164,12 +169,12 @@
 
         <!-- Taula de trams -->
         <div class="card shadow-sm">
-            <div class="card-header bg-secondary text-white d-flex justify-content-between">
-                <h5 class="mb-0"><i class="bi bi-table"></i> Trams de la xarxa</h5>
+            <div class="card-header bg-secondary text-white d-flex justify-content-between py-2">
+                <h6 class="mb-0"><i class="bi bi-table"></i> Trams de la xarxa</h6>
                 <div>
-                    <button class="btn btn-sm btn-success me-1" onclick="guardarProjecte()"><i class="bi bi-save"></i> Guardar</button>
                     <span id="dp-info" class="text-light small me-2"></span>
-                    <button class="btn btn-sm btn-light" onclick="netejarXarxa()">Netejar</button>
+                    <button class="btn btn-sm btn-success me-1" onclick="guardarProjecte()"><i class="bi bi-save"></i></button>
+                    <button class="btn btn-sm btn-light" onclick="netejarXarxa()"><i class="bi bi-trash"></i></button>
                 </div>
             </div>
             <div class="card-body p-0">
