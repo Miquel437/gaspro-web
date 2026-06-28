@@ -300,7 +300,7 @@ function afegirTram() {
     const desti = tipus.charAt(0).toUpperCase() + tipus.slice(1) + nodeCounter;
     nodeCounter++;
 
-    xarxa.    trams.push({origen, desti, longitud: long, potencia_kw: pot, tipus});
+    xarxa.trams.push({origen, desti, longitud: long, potencia_kw: pot, tipus});
     xarxa.nodes.push(desti);
     guardarLocal();
 
