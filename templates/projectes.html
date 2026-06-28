@@ -49,8 +49,8 @@
                                 <td>{{ p.nom }}</td>
                                 <td>{{ p.data[:19] if p.data else '--' }}</td>
                                 <td>
-                                    <button class="btn btn-sm btn-info" onclick="carregarProjecte({{ p.id }})">
-                                        <i class="bi bi-download"></i> Carregar
+                                    <button class="btn btn-sm btn-info" onclick="obrirCalculadora({{ p.id }})">
+                                        <i class="bi bi-calculator"></i> Calculadora
                                     </button>
                                     <button class="btn btn-sm btn-danger" onclick="eliminarProjecte({{ p.id }})">
                                         <i class="bi bi-trash"></i>
@@ -88,49 +88,12 @@
 {% block extra_scripts %}
 <script>
 function guardarProjecte() {
-    const nom = document.getElementById('proj-nom').value;
-    if (!nom) {
-        alert('Introdueix un nom pel projecte');
-        return;
-    }
-    if (typeof xarxa === 'undefined') {
-        // Agafar dades de la calculadora si existeixen
-        fetch('/api/projectes', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                nom: nom,
-                dades: {info: {buid: true}}
-            })
-        })
-        .then(r => r.json())
-        .then(data => {
-            document.getElementById('guardar-msg').style.display = 'block';
-            document.getElementById('guardar-msg').innerHTML =
-                '<div class="alert alert-success">Projecte guardat correctament (ID: ' + data.id + ')</div>';
-            setTimeout(() => location.reload(), 1500);
-        });
-    }
+    // Redirigir a la calculadora per guardar des d'allà
+    window.location.href = '/calculadora';
 }
 
-function carregarProjecte(id) {
-    fetch('/api/projectes/' + id)
-    .then(r => r.json())
-    .then(data => {
-        document.getElementById('modal-proj-nom').textContent = data.nom;
-        const body = document.getElementById('modal-proj-body');
-        if (data.dades && data.dades.trams) {
-            let html = '<h6>Trams:</h6><table class="table table-sm"><thead><tr><th>Origen</th><th>Destí</th><th>L (m)</th><th>Pot (kW)</th></tr></thead><tbody>';
-            data.dades.trams.forEach(t => {
-                html += `<tr><td>${t.origen}</td><td>${t.desti}</td><td>${t.longitud}</td><td>${t.potencia_kw}</td></tr>`;
-            });
-            html += '</tbody></table>';
-            body.innerHTML = html;
-        } else {
-            body.innerHTML = '<p class="text-muted">El projecte no conté dades de trams.</p>';
-        }
-        new bootstrap.Modal(document.getElementById('modalProjecte')).show();
-    });
+function obrirCalculadora(id) {
+    window.location.href = '/calculadora?projecte=' + id;
 }
 
 function eliminarProjecte(id) {

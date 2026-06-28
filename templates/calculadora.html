@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block title %}GasPro - Calculadora{% endblock %}
 
 {% block content %}
@@ -131,6 +132,7 @@
             <div class="card-header bg-secondary text-white d-flex justify-content-between">
                 <h5 class="mb-0"><i class="bi bi-table"></i> Trams de la xarxa</h5>
                 <div>
+                    <button class="btn btn-sm btn-success me-1" onclick="guardarProjecte()"><i class="bi bi-save"></i> Guardar</button>
                     <button class="btn btn-sm btn-light" onclick="netejarXarxa()">Netejar</button>
                 </div>
             </div>
@@ -179,13 +181,62 @@
 
 {% block extra_scripts %}
 <script>
-// Dades de la xarxa
-let xarxa = {
+// Dades de la xarxa (carregar de localStorage si existeix)
+let xarxa = JSON.parse(localStorage.getItem('gaspro_xarxa') || '{"trams":[],"nodes":["Xarxa"]}');
     trams: [],
     nodes: ['Xarxa']
 };
 
-let nodeCounter = 1;
+let nodeCounter = xarxa.nodes.length;
+
+// Guardar xarxa a localStorage en cada canvi
+function guardarLocal() {
+    localStorage.setItem('gaspro_xarxa', JSON.stringify(xarxa));
+}
+
+// Funció per guardar projecte a la base de dades
+function guardarProjecte() {
+    const nom = prompt('Nom del projecte:');
+    if (!nom) return;
+    
+    fetch('/api/projectes', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            nom: nom,
+            dades: { trams: xarxa.trams, nodes: xarxa.nodes }
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        alert('✅ Projecte "' + nom + '" guardat! (ID: ' + data.id + ')');
+        guardarLocal();
+    });
+}
+
+// Carregar projecte per ID si ve a la URL
+function carregarProjectePerId(id) {
+    fetch('/api/projectes/' + id)
+    .then(r => r.json())
+    .then(data => {
+        if (data.dades && data.dades.trams) {
+            xarxa.trams = data.dades.trams;
+            xarxa.nodes = data.dades.nodes || ['Xarxa'];
+            nodeCounter = xarxa.nodes.length;
+            guardarLocal();
+            
+            // Actualitzar desplegable d'orígens
+            const selOrigen = document.getElementById('tram-origen');
+            selOrigen.innerHTML = '';
+            xarxa.nodes.forEach(n => {
+                selOrigen.innerHTML += '<option value="' + n + '">' + n + '</option>';
+            });
+            selOrigen.value = xarxa.nodes[xarxa.nodes.length - 1];
+            
+            recalcularTot();
+        }
+    });
+}
 
 // Carregar aparells al desplegable
 fetch('/api/aparells')
@@ -231,6 +282,13 @@ function classificarGas(pcs_mj, dens) {
     });
 }
 
+// Si venim d'un projecte, carregar-lo
+const urlParams = new URLSearchParams(window.location.search);
+const projId = urlParams.get('projecte');
+if (projId) {
+    carregarProjectePerId(projId);
+}
+
 function afegirTram() {
     const origen = document.getElementById('tram-origen').value;
     const long = parseFloat(document.getElementById('tram-long').value);
@@ -242,8 +300,9 @@ function afegirTram() {
     const desti = tipus.charAt(0).toUpperCase() + tipus.slice(1) + nodeCounter;
     nodeCounter++;
 
-    xarxa.trams.push({origen, desti, longitud: long, potencia_kw: pot, tipus});
+    xarxa.    trams.push({origen, desti, longitud: long, potencia_kw: pot, tipus});
     xarxa.nodes.push(desti);
+    guardarLocal();
 
     // Actualitzar desplegable d'orígens
     const selOrigen = document.getElementById('tram-origen');
@@ -311,6 +370,7 @@ function eliminarTram(index) {
         xarxa.trams.splice(index, 1);
         const idxNode = xarxa.nodes.indexOf(desti);
         if (idxNode > -1) xarxa.nodes.splice(idxNode, 1);
+        guardarLocal();
         recalcularTot();
     }
 }
@@ -319,6 +379,7 @@ function netejarXarxa() {
     xarxa.trams = [];
     xarxa.nodes = ['Xarxa'];
     nodeCounter = 1;
+    guardarLocal();
     document.getElementById('trams-body').innerHTML = '<tr><td colspan="10" class="text-center text-muted">No hi ha trams.</td></tr>';
 
     const selOrigen = document.getElementById('tram-origen');
