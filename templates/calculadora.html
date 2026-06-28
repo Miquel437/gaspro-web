@@ -111,16 +111,23 @@
                             <option value="armari">Armari regulació</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Pressió</label>
                         <div class="input-group input-group-sm">
                             <input type="number" class="form-control" id="tram-pressio" step="0.1" value="20">
-                            <select class="form-select form-select-sm" id="tram-pressio-unit" style="max-width:85px" onchange="canviUnitatPressio()">
-                                <option value="mbar">mbar</option>
+                            <select class="form-select form-select-sm" id="tram-pressio-unit" style="max-width:70px" onchange="canviUnitatPressio()">
+                                <option value="mbar">mb</option>
                                 <option value="bar">bar</option>
-                                <option value="mmca">mm.c.a.</option>
+                                <option value="mmca">mmca</option>
                             </select>
                         </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Xarxa</label>
+                        <select class="form-select form-select-sm" id="tram-xarxa" onchange="canviTipusXarxa()">
+                            <option value="IRC" data-pressio="50" data-pmin="20">IRC</option>
+                            <option value="IRI" data-pressio="20" data-pmin="18">IRI</option>
+                        </select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Aparell</label>
@@ -128,7 +135,14 @@
                             <!-- Es carrega via JS -->
                         </select>
                     </div>
-                    <div class="col-md-12 d-flex align-items-end mt-2">
+                    <div class="col-md-2">
+                        <label class="form-label">ΔP disp.</label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" class="form-control" id="tram-dp-max" step="0.1" value="2.0">
+                            <span class="input-group-text" style="font-size:0.75rem">mbar</span>
+                        </div>
+                    </div>
+                    <div class="col-md-12 d-flex align-items-end mt-1">
                         <button type="button" class="btn btn-success btn-sm me-2 w-50" onclick="afegirTram()">
                             <i class="bi bi-plus-circle"></i> Afegir tram
                         </button>
@@ -146,6 +160,7 @@
                 <h5 class="mb-0"><i class="bi bi-table"></i> Trams de la xarxa</h5>
                 <div>
                     <button class="btn btn-sm btn-success me-1" onclick="guardarProjecte()"><i class="bi bi-save"></i> Guardar</button>
+                    <span id="dp-info" class="text-light small me-2"></span>
                     <button class="btn btn-sm btn-light" onclick="netejarXarxa()">Netejar</button>
                 </div>
             </div>
@@ -158,6 +173,7 @@
                                 <th>L (m)</th>
                                 <th>Pot (kW)</th>
                                 <th>P (mbar)</th>
+                                <th>Xarxa</th>
                                 <th>Cabal (m³/h)</th>
                                 <th>Ø teòric (mm)</th>
                                 <th>Tub comercial</th>
@@ -324,8 +340,10 @@ function afegirTram() {
     nodeCounter++;
 
     const pressioMbar = parseFloat(document.getElementById('tram-pressio').dataset.mbar) || 20;
+    const tipusXarxa = document.getElementById('tram-xarxa').value;
+    const dpMax = parseFloat(document.getElementById('tram-dp-max').value) || 2.0;
 
-    xarxa.trams.push({origen, desti, longitud: long, potencia_kw: pot, tipus, pressio_mbar: pressioMbar});
+    xarxa.trams.push({origen, desti, longitud: long, potencia_kw: pot, tipus, pressio_mbar: pressioMbar, tipus_xarxa: tipusXarxa, dp_max: dpMax});
     xarxa.nodes.push(desti);
     guardarLocal();
 
@@ -348,7 +366,7 @@ function recalcularTot() {
     const factor = parseFloat(document.getElementById('param-factor').value);
 
     if (xarxa.trams.length === 0) {
-        document.getElementById('trams-body').innerHTML = '<tr><td colspan="11" class="text-center text-muted">No hi ha trams. Afegeix-ne un!</td></tr>';
+        document.getElementById('trams-body').innerHTML = '<tr><td colspan="12" class="text-center text-muted">No hi ha trams. Afegeix-ne un!</td></tr>';
         return;
     }
 
@@ -377,6 +395,7 @@ function recalcularTot() {
                 <td>${t.longitud.toFixed(1)}</td>
                 <td>${xarxa.trams[i]?.potencia_kw || 0}</td>
                 <td>${t.pressio_treball_mbar || pressio}</td>
+                <td>${xarxa.trams[i]?.tipus_xarxa || "IRC"}</td>
                 <td>${t.cabal.toFixed(3)}</td>
                 <td>${t.diam_teoric.toFixed(1)}</td>
                 <td><strong>${t.tub}</strong></td>
@@ -387,9 +406,17 @@ function recalcularTot() {
             </tr>`;
         });
     })
+    .then(() => {
+        // Actualitzar info de ΔP disponible
+        const totalDp = xarxa.trams.reduce((sum, t) => sum + (t.dp_max || dp), 0);
+        const maxPath = calcularCaminsMesLlarg();
+        document.getElementById('dp-info').innerHTML = 
+            '<i class=\"bi bi-info-circle\"></i> ΔP disponible: ' + totalDp.toFixed(1) + 
+            ' mbar | Camí crític: ' + maxPath.longitud + ' m';
+    })
     .catch(err => {
         document.getElementById('trams-body').innerHTML =
-            '<tr><td colspan="11" class="text-center text-danger">Error: ' + err.message + '</td></tr>';
+            '<tr><td colspan="12" class="text-center text-danger">Error: ' + err.message + '</td></tr>';
     });
 
     // Classificar gas
@@ -413,7 +440,7 @@ function netejarXarxa() {
     xarxa.nodes = ['Xarxa'];
     nodeCounter = 1;
     guardarLocal();
-    document.getElementById('trams-body').innerHTML = '<tr><td colspan="11" class="text-center text-muted">No hi ha trams.</td></tr>';
+    document.getElementById('trams-body').innerHTML = '<tr><td colspan="12" class="text-center text-muted">No hi ha trams.</td></tr>';
 
     const selOrigen = document.getElementById('tram-origen');
     selOrigen.innerHTML = '<option value="Xarxa">Xarxa</option>';
@@ -421,6 +448,30 @@ function netejarXarxa() {
 
 // Canvi d'unitats de pressió
 const CONV_MBAR = { mbar: 1, bar: 1000, mmca: 0.0980665 };
+
+// Pressions mínimes segons UNE 60670
+const PRESSIO_MINIMA = {
+    'Gas Natural': 18,   // 18 mbar mínim als aparells
+    'Butà': 28,          // 28 mbar
+    'Propà': 36          // 36 mbar
+};
+
+function canviTipusXarxa() {
+    const sel = document.getElementById('tram-xarxa');
+    const opt = sel.options[sel.selectedIndex];
+    const pressioSuggerida = parseFloat(opt.dataset.pressio);
+    const pressioMinima = parseFloat(opt.dataset.pmin);
+    
+    // Posar pressió suggerida
+    const unitat = document.getElementById('tram-pressio-unit').value;
+    const inputPressio = document.getElementById('tram-pressio');
+    inputPressio.value = (pressioSuggerida / CONV_MBAR[unitat]).toFixed(unitat === 'mbar' ? 1 : 3);
+    inputPressio.dataset.mbar = pressioSuggerida;
+    
+    // Calcular ΔP màxim disponible
+    const dpDisponible = pressioSuggerida - pressioMinima;
+    document.getElementById('tram-dp-max').value = dpDisponible.toFixed(1);
+}
 
 function canviUnitatPressio() {
     // Quan es canvia la unitat, convertir el valor actual
@@ -459,6 +510,36 @@ function canviUnitatPressio() {
         inputPressio.dataset.mbar = parseFloat(inputPressio.value) * CONV_MBAR[selUnitat.value];
     }, 50);
 })();
+
+// Funció per trobar el camí més llarg des de l'origen
+function calcularCaminsMesLlarg() {
+    if (xarxa.trams.length === 0) return { longitud: 0, cami: [] };
+    
+    // Construir arbre des de l'origen
+    const destins = {};
+    xarxa.trams.forEach(t => {
+        if (!destins[t.origen]) destins[t.origen] = [];
+        destins[t.origen].push(t);
+    });
+    
+    // BFS per trobar camins
+    let millor = { longitud: 0, cami: [] };
+    
+    function explorar(node, acum, cami) {
+        if (!destins[node] || destins[node].length === 0) {
+            if (acum > millor.longitud) {
+                millor = { longitud: acum, cami: [...cami] };
+            }
+            return;
+        }
+        destins[node].forEach(t => {
+            explorar(t.desti, acum + t.longitud, [...cami, t]);
+        });
+    }
+    
+    explorar('Xarxa', 0, []);
+    return millor;
+}
 
 // Inicialitzar amb gas per defecte
 canviGas();

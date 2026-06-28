@@ -110,9 +110,10 @@ def api_calcular_xarxa():
     for tram in trams:
         pot = float(tram.get("potencia_kw", 0)) * factor
         longit = float(tram.get("longitud", 1))
-        # Cada tram pot tenir la seva pressió; si no, s'usa la pressió per defecte
+        # Cada tram pot tenir la seva pressió i dp_max
         pressio_tram = float(tram.get("pressio_mbar", pressio_per_defecte))
-        r = CalculadorHidraulic.calcular_tram(pot, longit, dp_max, pcs, dens, pressio_tram)
+        dp_tram = float(tram.get("dp_max", dp_max))
+        r = CalculadorHidraulic.calcular_tram(pot, longit, dp_tram, pcs, dens, pressio_tram)
         resultats.append({
             "origen": tram.get("origen", ""),
             "desti": tram.get("desti", ""),
