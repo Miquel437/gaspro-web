@@ -39,8 +39,11 @@
                         <input type="number" class="form-control" id="param-dens" step="0.01" value="0.60">
                     </div>
                     <div class="mb-2">
-                        <label class="form-label">Pressió final aparells (mbar)</label>
-                        <input type="number" class="form-control" id="param-pressio" step="0.1" value="20" readonly>
+                        <label class="form-label">Pressió final aparells</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="param-pressio" step="0.1" value="20" readonly>
+                            <span class="input-group-text" id="param-pressio-unit">mbar</span>
+                        </div>
                         <small class="text-muted">Cada tram té el seu camp de pressió</small>
                     </div>
                     <div class="mb-2">
@@ -84,7 +87,7 @@
             </div>
             <div class="card-body">
                 <form id="form-tram" class="row g-2">
-                    <div class="col-md-2">
+                    <div class="col-md-1">
                         <label class="form-label">Origen</label>
                         <select class="form-select form-select-sm" id="tram-origen">
                             <option value="Xarxa">Xarxa</option>
@@ -108,9 +111,16 @@
                             <option value="armari">Armari regulació</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Pressió (mbar)</label>
-                        <input type="number" class="form-control form-control-sm" id="tram-pressio" step="0.1" value="20">
+                    <div class="col-md-3">
+                        <label class="form-label">Pressió</label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" class="form-control" id="tram-pressio" step="0.1" value="20">
+                            <select class="form-select form-select-sm" id="tram-pressio-unit" style="max-width:85px" onchange="canviUnitatPressio()">
+                                <option value="mbar">mbar</option>
+                                <option value="bar">bar</option>
+                                <option value="mmca">mm.c.a.</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Aparell</label>
@@ -118,7 +128,7 @@
                             <!-- Es carrega via JS -->
                         </select>
                     </div>
-                    <div class="col-md-6 d-flex align-items-end">
+                    <div class="col-md-12 d-flex align-items-end mt-2">
                         <button type="button" class="btn btn-success btn-sm me-2 w-50" onclick="afegirTram()">
                             <i class="bi bi-plus-circle"></i> Afegir tram
                         </button>
@@ -267,7 +277,14 @@ function canviGas() {
     document.getElementById('param-pressio').value = pressio.toFixed(1);
 
     // Actualitzar pressió per defecte del tram segons el gas
-    document.getElementById('tram-pressio').value = pressio.toFixed(1);
+    const unitat = document.getElementById('tram-pressio-unit').value;
+    const inputPressio = document.getElementById('tram-pressio');
+    inputPressio.value = (pressio / CONV_MBAR[unitat]).toFixed(unitat === 'mbar' ? 1 : 3);
+    inputPressio.dataset.mbar = pressio;
+    // Actualitzar pressió general (readonly)
+    const paramInput = document.getElementById('param-pressio');
+    paramInput.value = (pressio / CONV_MBAR[unitat]).toFixed(unitat === 'mbar' ? 1 : 3);
+    paramInput.dataset.mbar = pressio;
 
     // Actualitzar classificació Wobbe
     classificarGas(pcs_mj, dens);
@@ -306,9 +323,9 @@ function afegirTram() {
     const desti = tipus.charAt(0).toUpperCase() + tipus.slice(1) + nodeCounter;
     nodeCounter++;
 
-    const pressio = parseFloat(document.getElementById('tram-pressio').value);
+    const pressioMbar = parseFloat(document.getElementById('tram-pressio').dataset.mbar) || 20;
 
-    xarxa.trams.push({origen, desti, longitud: long, potencia_kw: pot, tipus, pressio_mbar: pressio});
+    xarxa.trams.push({origen, desti, longitud: long, potencia_kw: pot, tipus, pressio_mbar: pressioMbar});
     xarxa.nodes.push(desti);
     guardarLocal();
 
@@ -401,6 +418,47 @@ function netejarXarxa() {
     const selOrigen = document.getElementById('tram-origen');
     selOrigen.innerHTML = '<option value="Xarxa">Xarxa</option>';
 }
+
+// Canvi d'unitats de pressió
+const CONV_MBAR = { mbar: 1, bar: 1000, mmca: 0.0980665 };
+
+function canviUnitatPressio() {
+    // Quan es canvia la unitat, convertir el valor actual
+    const sel = document.getElementById('tram-pressio-unit');
+    const unitat = sel.value;
+    const input = document.getElementById('tram-pressio');
+    const valorMbar = input.dataset.mbar ? parseFloat(input.dataset.mbar) : parseFloat(input.value);
+    
+    // Mostrar el valor en la nova unitat
+    input.value = (valorMbar / CONV_MBAR[unitat]).toFixed(unitat === 'mbar' ? 1 : 3);
+    input.dataset.mbar = valorMbar;
+    
+    // Actualitzar també la pressió general (readonly)
+    const paramInput = document.getElementById('param-pressio');
+    const paramMbar = parseFloat(paramInput.dataset.mbar) || parseFloat(paramInput.value) || 20;
+    paramInput.value = (paramMbar / CONV_MBAR[unitat]).toFixed(unitat === 'mbar' ? 1 : 3);
+    paramInput.dataset.mbar = paramMbar;
+    // Actualitzar l'etiqueta de la unitat als paràmetres generals
+    document.getElementById('param-pressio-unit').textContent = unitat;
+}
+
+// Capturar canvis al camp de pressió per actualitzar dataset.mbar
+(function() {
+    const inputPressio = document.getElementById('tram-pressio');
+    const selUnitat = document.getElementById('tram-pressio-unit');
+    
+    // Quan l'usuari escriu, calcular el valor en mbar
+    inputPressio.addEventListener('input', function() {
+        const unitat = selUnitat.value;
+        const valor = parseFloat(this.value) || 0;
+        this.dataset.mbar = valor * CONV_MBAR[unitat];
+    });
+    
+    // Quan es carrega el projecte, inicialitzar dataset
+    setTimeout(function() {
+        inputPressio.dataset.mbar = parseFloat(inputPressio.value) * CONV_MBAR[selUnitat.value];
+    }, 50);
+})();
 
 // Inicialitzar amb gas per defecte
 canviGas();
