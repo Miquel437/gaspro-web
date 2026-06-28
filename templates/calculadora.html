@@ -353,11 +353,15 @@ function recalcularTot() {
     .then(data => {
         const tbody = document.getElementById('trams-body');
         tbody.innerHTML = '';
-        data.trams.forEach((t, i) => {
+                    data.trams.forEach((t, i) => {
+            const formulaLabel = t.formula === "Baixa pressió (\u226450 mbar)" ?
+                '<span class="badge bg-info" title="Renouard baixa pressió">BP</span>' :
+                '<span class="badge bg-warning text-dark" title="Renouard quadràtica">MP</span>';
             tbody.innerHTML += `<tr>
-                <td>${t.origen} → ${t.desti}</td>
+                <td>${t.origen} → ${t.desti} ${formulaLabel}</td>
                 <td>${t.longitud.toFixed(1)}</td>
                 <td>${xarxa.trams[i]?.potencia_kw || 0}</td>
+                <td>${t.pressio_treball_mbar || pressio}</td>
                 <td>${t.cabal.toFixed(3)}</td>
                 <td>${t.diam_teoric.toFixed(1)}</td>
                 <td><strong>${t.tub}</strong></td>
