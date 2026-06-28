@@ -208,7 +208,8 @@ function guardarProjecte() {
     .then(data => {
         alert('✅ Projecte "' + nom + '" guardat! (ID: ' + data.id + ')');
         guardarLocal();
-    });
+    })
+    .catch(err => alert('❌ Error en guardar: ' + err.message));
 }
 
 // Carregar projecte per ID si ve a la URL
@@ -232,7 +233,8 @@ function carregarProjectePerId(id) {
             
             recalcularTot();
         }
-    });
+    })
+    .catch(err => console.error('Error carregant projecte:', err));
 }
 
 // Carregar aparells al desplegable
@@ -344,7 +346,7 @@ function recalcularTot() {
             tbody.innerHTML += `<tr>
                 <td>${t.origen} → ${t.desti}</td>
                 <td>${t.longitud.toFixed(1)}</td>
-                <td>${trams[i]?.potencia_kw || 0}</td>
+                <td>${xarxa.trams[i]?.potencia_kw || 0}</td>
                 <td>${t.cabal.toFixed(3)}</td>
                 <td>${t.diam_teoric.toFixed(1)}</td>
                 <td><strong>${t.tub}</strong></td>
@@ -354,6 +356,10 @@ function recalcularTot() {
                 <td><button class="btn btn-sm btn-danger" onclick="eliminarTram(${i})"><i class="bi bi-trash"></i></button></td>
             </tr>`;
         });
+    })
+    .catch(err => {
+        document.getElementById('trams-body').innerHTML =
+            '<tr><td colspan="10" class="text-center text-danger">Error: ' + err.message + '</td></tr>';
     });
 
     // Classificar gas
