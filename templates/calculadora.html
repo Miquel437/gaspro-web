@@ -84,23 +84,23 @@
             </div>
             <div class="card-body">
                 <form id="form-tram" class="row g-2">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Origen</label>
-                        <select class="form-select" id="tram-origen">
+                        <select class="form-select form-select-sm" id="tram-origen">
                             <option value="Xarxa">Xarxa</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Longitud (m)</label>
-                        <input type="number" class="form-control" id="tram-long" value="10" step="0.1" min="0.1">
+                        <input type="number" class="form-control form-control-sm" id="tram-long" value="10" step="0.1" min="0.1">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Potència (kW)</label>
-                        <input type="number" class="form-control" id="tram-pot" value="24" step="0.1">
+                        <input type="number" class="form-control form-control-sm" id="tram-pot" value="24" step="0.1">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Tipus destí</label>
-                        <select class="form-select" id="tram-tipus">
+                        <select class="form-select form-select-sm" id="tram-tipus">
                             <option value="aparell">Aparell</option>
                             <option value="clau">Clau</option>
                             <option value="derivacio">Derivació</option>
@@ -109,23 +109,21 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Pressió tram (mbar)</label>
-                        <input type="number" class="form-control" id="tram-pressio" step="0.1" value="20">
+                        <label class="form-label">Pressió (mbar)</label>
+                        <input type="number" class="form-control form-control-sm" id="tram-pressio" step="0.1" value="20">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                         <label class="form-label">Aparell</label>
-                        <select class="form-select" id="tram-aparell">
+                        <select class="form-select form-select-sm" id="tram-aparell">
                             <!-- Es carrega via JS -->
                         </select>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button type="button" class="btn btn-success w-100" onclick="afegirTram()">
+                    <div class="col-md-6 d-flex align-items-end">
+                        <button type="button" class="btn btn-success btn-sm me-2 w-50" onclick="afegirTram()">
                             <i class="bi bi-plus-circle"></i> Afegir tram
                         </button>
-                    </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button type="button" class="btn btn-primary w-100" onclick="recalcularTot()">
-                            <i class="bi bi-arrow-repeat"></i> Recalcular xarxa
+                        <button type="button" class="btn btn-primary btn-sm w-50" onclick="recalcularTot()">
+                            <i class="bi bi-arrow-repeat"></i> Calcular
                         </button>
                     </div>
                 </form>
