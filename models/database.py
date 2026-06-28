@@ -17,7 +17,8 @@ def get_connection():
     """Retorna una connexió a la base de dades."""
     if USE_POSTGRES:
         import psycopg2
-        conn = psycopg2.connect(DATABASE_URL)
+        from psycopg2.extras import RealDictCursor
+        conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
         conn.autocommit = True
         return conn
     else:
@@ -71,10 +72,10 @@ def init_db():
 def _inserir_dades_base(c):
     """Insereix dades per defecte si la taula està buida."""
     if USE_POSTGRES:
-        c.execute("SELECT COUNT(*) FROM gasos")
+        c.execute("SELECT COUNT(*) AS count FROM gasos")
     else:
-        c.execute("SELECT COUNT(*) FROM gasos")
-    if c.fetchone()[0] == 0:
+        c.execute("SELECT COUNT(*) AS count FROM gasos")
+    if c.fetchone()['count'] == 0:
         gasos = [
             ('Gas Natural', 11.63, 0.6, 20.0, 41.9, 0.735),
             ('Butà', 32.22, 2.0, 36.0, 116.0, 2.5),
@@ -87,10 +88,10 @@ def _inserir_dades_base(c):
                 c.execute("INSERT INTO gasos (nom, pcs, densitat, pressio_mbar, pcs_mj_m3, densitat_kg_m3) VALUES (?,?,?,?,?,?)", g)
 
     if USE_POSTGRES:
-        c.execute("SELECT COUNT(*) FROM aparells")
+        c.execute("SELECT COUNT(*) AS count FROM aparells")
     else:
-        c.execute("SELECT COUNT(*) FROM aparells")
-    if c.fetchone()[0] == 0:
+        c.execute("SELECT COUNT(*) AS count FROM aparells")
+    if c.fetchone()['count'] == 0:
         aparells = [
             ('Saunier Duval ThemaCondens F 25', 'caldera', 25.0, 'Saunier Duval', 'TGC-25'),
             ('Junkers Cerapur Comfort 24', 'caldera', 24.0, 'Junkers', 'ZSB-24'),
@@ -107,10 +108,10 @@ def _inserir_dades_base(c):
                 c.execute("INSERT INTO aparells (nom, tipus, potencia_kw, fabricant, model_exacte) VALUES (?,?,?,?,?)", a)
 
     if USE_POSTGRES:
-        c.execute("SELECT COUNT(*) FROM cataleg_elements")
+        c.execute("SELECT COUNT(*) AS count FROM cataleg_elements")
     else:
-        c.execute("SELECT COUNT(*) FROM cataleg_elements")
-    if c.fetchone()[0] == 0:
+        c.execute("SELECT COUNT(*) AS count FROM cataleg_elements")
+    if c.fetchone()['count'] == 0:
         elements = [
             ('Connexió a xarxa (Escomesa)', 'origen', 'Connexió xarxa distribució'),
             ("Bateria d'ampolles", 'origen', 'Conjunt bombones'),
@@ -163,7 +164,7 @@ def add_aparell(nom: str, tipus: str, potencia: float, fabricant: str = "",
     if USE_POSTGRES:
         c.execute("INSERT INTO aparells (nom, tipus, potencia_kw, fabricant, model_exacte, hores_dia) VALUES (%s,%s,%s,%s,%s,%s) RETURNING id",
                   (nom, tipus, potencia, fabricant, model, hores))
-        new_id = c.fetchone()[0]
+        new_id = c.fetchone()['id']
     else:
         c.execute("INSERT INTO aparells (nom, tipus, potencia_kw, fabricant, model_exacte, hores_dia) VALUES (?,?,?,?,?,?)",
                   (nom, tipus, potencia, fabricant, model, hores))
@@ -216,7 +217,7 @@ def add_element(nom: str, categoria: str, descripcio: str = "") -> int:
     if USE_POSTGRES:
         c.execute("INSERT INTO cataleg_elements (nom, categoria, descripcio) VALUES (%s,%s,%s) RETURNING id",
                   (nom, categoria, descripcio))
-        new_id = c.fetchone()[0]
+        new_id = c.fetchone()['id']
     else:
         c.execute("INSERT INTO cataleg_elements (nom, categoria, descripcio) VALUES (?,?,?)",
                   (nom, categoria, descripcio))
@@ -248,7 +249,7 @@ def save_project(nom: str, dades: dict) -> int:
     if USE_POSTGRES:
         c.execute("INSERT INTO projectes (nom, data, dades_json) VALUES (%s,%s,%s) RETURNING id",
                   (nom, data_str, dades_json))
-        new_id = c.fetchone()[0]
+        new_id = c.fetchone()['id']
     else:
         c.execute("INSERT INTO projectes (nom, data, dades_json) VALUES (?,?,?)",
                   (nom, data_str, dades_json))
