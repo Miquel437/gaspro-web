@@ -183,9 +183,6 @@
 <script>
 // Dades de la xarxa (carregar de localStorage si existeix)
 let xarxa = JSON.parse(localStorage.getItem('gaspro_xarxa') || '{"trams":[],"nodes":["Xarxa"]}');
-    trams: [],
-    nodes: ['Xarxa']
-};
 
 let nodeCounter = xarxa.nodes.length;
 
