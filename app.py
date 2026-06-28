@@ -104,20 +104,25 @@ def api_calcular_xarxa():
     dp_max = float(data.get("dp_max", 1.0))
     factor = float(data.get("factor_demanda", 1.0))
     pressio_per_defecte = float(data.get("pressio_mbar", 20))
+    accessoris_percent = float(data.get("accessoris_percent", 15))
 
     # Calcula cada tram
     resultats = []
     for tram in trams:
         pot = float(tram.get("potencia_kw", 0)) * factor
         longit = float(tram.get("longitud", 1))
+        # Longitud equivalent considerant accessoris (colzes, T's, claus...)
+        longit_equiv = longit * (1 + accessoris_percent / 100.0)
         # Cada tram pot tenir la seva pressió i dp_max
         pressio_tram = float(tram.get("pressio_mbar", pressio_per_defecte))
         dp_tram = float(tram.get("dp_max", dp_max))
-        r = CalculadorHidraulic.calcular_tram(pot, longit, dp_tram, pcs, dens, pressio_tram)
+        # Calcular amb la longitud equivalent (accessoris inclosos)
+        r = CalculadorHidraulic.calcular_tram(pot, longit_equiv, dp_tram, pcs, dens, pressio_tram)
         resultats.append({
             "origen": tram.get("origen", ""),
             "desti": tram.get("desti", ""),
             "longitud": longit,
+            "longitud_equiv": round(longit_equiv, 2),
             "pressio_treball_mbar": pressio_tram,
             **r
         })

@@ -59,6 +59,14 @@
                             <option value="0.25">25%</option>
                         </select>
                     </div>
+                    <div class="mb-2">
+                        <label class="form-label">Accessoris (%)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="param-accessoris" value="15" min="0" max="50" step="5">
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <small class="text-muted">Longitud equivalent per colzes, T's, claus...</small>
+                    </div>
                 </form>
             </div>
         </div>
@@ -171,6 +179,7 @@
                             <tr>
                                 <th>Tram</th>
                                 <th>L (m)</th>
+                                <th>L eq.</th>
                                 <th>Pot (kW)</th>
                                 <th>P (mbar)</th>
                                 <th>Xarxa</th>
@@ -366,9 +375,11 @@ function recalcularTot() {
     const factor = parseFloat(document.getElementById('param-factor').value);
 
     if (xarxa.trams.length === 0) {
-        document.getElementById('trams-body').innerHTML = '<tr><td colspan="12" class="text-center text-muted">No hi ha trams. Afegeix-ne un!</td></tr>';
+        document.getElementById('trams-body').innerHTML = '<tr><td colspan="13" class="text-center text-muted">No hi ha trams. Afegeix-ne un!</td></tr>';
         return;
     }
+
+    const accessoris = parseFloat(document.getElementById('param-accessoris').value) || 15;
 
     fetch('/api/calcular-xarxa', {
         method: 'POST',
@@ -379,7 +390,8 @@ function recalcularTot() {
             densitat: dens,
             pressio_mbar: pressio,
             dp_max: dp,
-            factor_demanda: factor
+            factor_demanda: factor,
+            accessoris_percent: accessoris
         })
     })
     .then(r => r.json())
@@ -393,6 +405,7 @@ function recalcularTot() {
             tbody.innerHTML += `<tr>
                 <td>${t.origen} → ${t.desti} ${formulaLabel}</td>
                 <td>${t.longitud.toFixed(1)}</td>
+                <td>${t.longitud_equiv ? t.longitud_equiv.toFixed(1) : t.longitud.toFixed(1)}</td>
                 <td>${xarxa.trams[i]?.potencia_kw || 0}</td>
                 <td>${t.pressio_treball_mbar || pressio}</td>
                 <td>${xarxa.trams[i]?.tipus_xarxa || "IRC"}</td>
@@ -416,7 +429,7 @@ function recalcularTot() {
     })
     .catch(err => {
         document.getElementById('trams-body').innerHTML =
-            '<tr><td colspan="12" class="text-center text-danger">Error: ' + err.message + '</td></tr>';
+            '<tr><td colspan="13" class="text-center text-danger">Error: ' + err.message + '</td></tr>';
     });
 
     // Classificar gas
@@ -440,7 +453,7 @@ function netejarXarxa() {
     xarxa.nodes = ['Xarxa'];
     nodeCounter = 1;
     guardarLocal();
-    document.getElementById('trams-body').innerHTML = '<tr><td colspan="12" class="text-center text-muted">No hi ha trams.</td></tr>';
+    document.getElementById('trams-body').innerHTML = '<tr><td colspan="13" class="text-center text-muted">No hi ha trams.</td></tr>';
 
     const selOrigen = document.getElementById('tram-origen');
     selOrigen.innerHTML = '<option value="Xarxa">Xarxa</option>';
