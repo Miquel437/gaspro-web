@@ -39,8 +39,9 @@
                         <input type="number" class="form-control" id="param-dens" step="0.01" value="0.60">
                     </div>
                     <div class="mb-2">
-                        <label class="form-label">Pressió treball (mbar)</label>
-                        <input type="number" class="form-control" id="param-pressio" step="0.1" value="20">
+                        <label class="form-label">Pressió final aparells (mbar)</label>
+                        <input type="number" class="form-control" id="param-pressio" step="0.1" value="20" readonly>
+                        <small class="text-muted">Cada tram té el seu camp de pressió</small>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">ΔP màxim (mbar)</label>
@@ -97,7 +98,7 @@
                         <label class="form-label">Potència (kW)</label>
                         <input type="number" class="form-control" id="tram-pot" value="24" step="0.1">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Tipus destí</label>
                         <select class="form-select" id="tram-tipus">
                             <option value="aparell">Aparell</option>
@@ -107,18 +108,22 @@
                             <option value="armari">Armari regulació</option>
                         </select>
                     </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Pressió tram (mbar)</label>
+                        <input type="number" class="form-control" id="tram-pressio" step="0.1" value="20">
+                    </div>
                     <div class="col-md-4">
                         <label class="form-label">Aparell</label>
                         <select class="form-select" id="tram-aparell">
                             <!-- Es carrega via JS -->
                         </select>
                     </div>
-                    <div class="col-md-4 d-flex align-items-end">
+                    <div class="col-md-3 d-flex align-items-end">
                         <button type="button" class="btn btn-success w-100" onclick="afegirTram()">
                             <i class="bi bi-plus-circle"></i> Afegir tram
                         </button>
                     </div>
-                    <div class="col-md-4 d-flex align-items-end">
+                    <div class="col-md-3 d-flex align-items-end">
                         <button type="button" class="btn btn-primary w-100" onclick="recalcularTot()">
                             <i class="bi bi-arrow-repeat"></i> Recalcular xarxa
                         </button>
@@ -144,6 +149,7 @@
                                 <th>Tram</th>
                                 <th>L (m)</th>
                                 <th>Pot (kW)</th>
+                                <th>P (mbar)</th>
                                 <th>Cabal (m³/h)</th>
                                 <th>Ø teòric (mm)</th>
                                 <th>Tub comercial</th>
@@ -262,6 +268,9 @@ function canviGas() {
     document.getElementById('param-dens').value = dens.toFixed(2);
     document.getElementById('param-pressio').value = pressio.toFixed(1);
 
+    // Actualitzar pressió per defecte del tram segons el gas
+    document.getElementById('tram-pressio').value = pressio.toFixed(1);
+
     // Actualitzar classificació Wobbe
     classificarGas(pcs_mj, dens);
 }
@@ -299,7 +308,9 @@ function afegirTram() {
     const desti = tipus.charAt(0).toUpperCase() + tipus.slice(1) + nodeCounter;
     nodeCounter++;
 
-    xarxa.trams.push({origen, desti, longitud: long, potencia_kw: pot, tipus});
+    const pressio = parseFloat(document.getElementById('tram-pressio').value);
+
+    xarxa.trams.push({origen, desti, longitud: long, potencia_kw: pot, tipus, pressio_mbar: pressio});
     xarxa.nodes.push(desti);
     guardarLocal();
 
@@ -322,7 +333,7 @@ function recalcularTot() {
     const factor = parseFloat(document.getElementById('param-factor').value);
 
     if (xarxa.trams.length === 0) {
-        document.getElementById('trams-body').innerHTML = '<tr><td colspan="10" class="text-center text-muted">No hi ha trams. Afegeix-ne un!</td></tr>';
+        document.getElementById('trams-body').innerHTML = '<tr><td colspan="11" class="text-center text-muted">No hi ha trams. Afegeix-ne un!</td></tr>';
         return;
     }
 
@@ -359,7 +370,7 @@ function recalcularTot() {
     })
     .catch(err => {
         document.getElementById('trams-body').innerHTML =
-            '<tr><td colspan="10" class="text-center text-danger">Error: ' + err.message + '</td></tr>';
+            '<tr><td colspan="11" class="text-center text-danger">Error: ' + err.message + '</td></tr>';
     });
 
     // Classificar gas
@@ -383,7 +394,7 @@ function netejarXarxa() {
     xarxa.nodes = ['Xarxa'];
     nodeCounter = 1;
     guardarLocal();
-    document.getElementById('trams-body').innerHTML = '<tr><td colspan="10" class="text-center text-muted">No hi ha trams.</td></tr>';
+    document.getElementById('trams-body').innerHTML = '<tr><td colspan="11" class="text-center text-muted">No hi ha trams.</td></tr>';
 
     const selOrigen = document.getElementById('tram-origen');
     selOrigen.innerHTML = '<option value="Xarxa">Xarxa</option>';
