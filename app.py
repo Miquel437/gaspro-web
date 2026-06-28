@@ -94,25 +94,30 @@ def api_calcular_tram():
 
 @app.route("/api/calcular-xarxa", methods=["POST"])
 def api_calcular_xarxa():
-    """Rep una xarxa completa (nodes + trams) i la calcula."""
+    """Rep una xarxa completa (nodes + trams) i la calcula.
+    Cada tram pot tenir la seva pròpia pressió de treball.
+    """
     data = request.get_json()
     trams = data.get("trams", [])
     pcs = float(data.get("pcs_kwh", 10.75))
     dens = float(data.get("densitat", 0.6))
-    pressio = float(data.get("pressio_mbar", 20))
     dp_max = float(data.get("dp_max", 1.0))
     factor = float(data.get("factor_demanda", 1.0))
+    pressio_per_defecte = float(data.get("pressio_mbar", 20))
 
     # Calcula cada tram
     resultats = []
     for tram in trams:
         pot = float(tram.get("potencia_kw", 0)) * factor
         longit = float(tram.get("longitud", 1))
-        r = CalculadorHidraulic.calcular_tram(pot, longit, dp_max, pcs, dens, pressio)
+        # Cada tram pot tenir la seva pressió; si no, s'usa la pressió per defecte
+        pressio_tram = float(tram.get("pressio_mbar", pressio_per_defecte))
+        r = CalculadorHidraulic.calcular_tram(pot, longit, dp_max, pcs, dens, pressio_tram)
         resultats.append({
             "origen": tram.get("origen", ""),
             "desti": tram.get("desti", ""),
             "longitud": longit,
+            "pressio_treball_mbar": pressio_tram,
             **r
         })
 

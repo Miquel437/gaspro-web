@@ -18,11 +18,22 @@ class CalculadorHidraulic:
         ("Acero DN40 (42 int)", 42.0)
     ]
 
+    # Llindar entre fórmula de baixa pressió i quadràtica (mbar)
+    # - Baixa pressió (Renouard lineal): ΔP = 23200·d·L·Q¹·⁸² / D⁴·⁸²
+    # - Mitja/Alta pressió (Renouard quadràtica): P₁² - P₂² = 48.6·d·L·Q¹·⁸² / D⁴·⁸²
+    LLINDAR_PRESSIO_BAIXA = 50  # mbar
+
     @classmethod
     def calcular_tram(cls, potencia_kw: float, longitud: float,
                       dp_limit_mbar: float, pcs_kwh_m3: float,
                       densitat_relativa: float, pressio_treball_mbar: float
                       ) -> dict:
+        """
+        Calcula un tram de canonada.
+        
+        - Si pressio <= LLINDAR_PRESSIO_BAIXA (50 mbar): fórmula de baixa pressió
+        - Si pressio > LLINDAR_PRESSIO_BAIXA: fórmula quadràtica de Renouard
+        """
         if potencia_kw <= 0 or longitud <= 0:
             return {"cabal": 0, "diam_int": 0, "tub": "-",
                     "dp_real": 0, "diam_teoric": 0, "velocitat": 0}
@@ -31,11 +42,13 @@ class CalculadorHidraulic:
         pressio_bar = pressio_treball_mbar / 1000.0
         d_teoric = 0.0
 
-        if pressio_treball_mbar <= 150:
+        if pressio_treball_mbar <= cls.LLINDAR_PRESSIO_BAIXA:
+            # Fórmula de baixa pressió (Renouard lineal)
             numerador = 23200.0 * densitat_relativa * longitud * pow(cabal, 1.82)
             if dp_limit_mbar > 0:
                 d_teoric = pow(numerador / dp_limit_mbar, 1 / 4.82)
         else:
+            # Fórmula quadràtica de Renouard (mitja/alta pressió)
             p1_abs = pressio_bar + 1.01325
             p2_abs_min = p1_abs - (dp_limit_mbar / 1000.0)
             numerador = 48.6 * densitat_relativa * longitud * pow(cabal, 1.82)
@@ -58,10 +71,12 @@ class CalculadorHidraulic:
                 if area_m2 > 0:
                     velocitat = (cabal_real / 3600.0) / area_m2
 
-                if pressio_treball_mbar <= 150:
+                if pressio_treball_mbar <= cls.LLINDAR_PRESSIO_BAIXA:
+                    # Baixa pressió
                     n = 23200.0 * densitat_relativa * longitud * pow(cabal, 1.82)
                     dp_real = n / pow(d_int, 4.82)
                 else:
+                    # Mitja/Alta pressió (quadràtica)
                     p1_abs = pressio_bar + 1.01325
                     n = 48.6 * densitat_relativa * longitud * pow(cabal, 1.82)
                     terme_dreta = n / pow(d_int, 4.82)
@@ -77,6 +92,8 @@ class CalculadorHidraulic:
             "dp_real": round(dp_real, 4),
             "diam_teoric": round(d_teoric, 2),
             "velocitat": round(velocitat, 2),
+            "pressio_treball_mbar": pressio_treball_mbar,
+            "formula": "Baixa pressió (≤50 mbar)" if pressio_treball_mbar <= cls.LLINDAR_PRESSIO_BAIXA else "Quadràtica (>50 mbar)"
         }
 
     @classmethod
